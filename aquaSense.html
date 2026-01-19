@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AquaSense – Kid-Friendly Water Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Simple, kid-friendly styling -->
+  <style>
+    :root {
+      --blue-light: #e0f4ff;
+      --blue-main: #1b8fd9;
+      --blue-dark: #155a8c;
+      --green-main: #17a673;
+      --yellow-main: #ffd447;
+      --danger: #ff6b6b;
+      --bg: #f5fbff;
+      --card-radius: 16px;
+      --shadow-soft: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #042235;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--blue-main), var(--green-main));
+      color: white;
+      padding: 16px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .app-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-title h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+    }
+
+    .app-title small {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .nav-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px 6px;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav-button {
+      border: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #eef6ff;
+      color: #265981;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+
+    .nav-button span.emoji {
+      font-size: 16px;
+    }
+
+    .nav-button.active {
+      background: var(--blue-main);
+      color: white;
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-1px);
+    }
+
+    main {
+      padding: 14px 12px 40px;
+      max-width: 950px;
+      margin: 0 auto;
+    }
+
+    .screen {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .screen.active-screen {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 16px 14px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #f0f7ff;
+      color: #265981;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      margin-top: 4px;
+      margin-bottom: 8px;
+      font-size: 20px;
+      color: var(--blue-dark);
+    }
+
+    h3 {
+      margin: 8px 0 6px;
+      font-size: 16px;
+      color: var(--blue-dark);
+    }
+
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .highlight-box {
+      background: var(--blue-light);
+      border-radius: 12px;
+      padding: 10px 12px;
+      border-left: 4px solid var(--blue-main);
+      font-size: 13px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .feature-card {
+      border-radius: var(--card-radius);
+      background: white;
+      padding: 12px 12px 10px;
+      box-shadow: var(--shadow-soft);
+      border-top: 4px solid var(--blue-main);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #f3f6fb;
+    }
+
+    .big-number {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    /* Check My Water section */
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0 6px;
+    }
+
+    select, input[type="text"] {
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #c5d7ea;
+      font-size: 14px;
+      min-width: 180px;
+      max-width: 100%;
+    }
+
+    button.primary {
+      background: var(--green-main);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    button.primary:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .small-text {
+      font-size: 12px;
+      color: #56708a;
+    }
+
+    .results-container {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .metric-card {
+      border-radius: 14px;
+      padding: 10px 11px 9px;
+      background: #f8fbff;
+      border: 1px solid #dde7f5;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #56708a;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .metric-status {
+      font-size: 12px;
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    .status-good { color: var(--green-main); }
+    .status-ok { color: #e8961f; }
+    .status-bad { color: var(--danger); }
+
+    /* Map-ish view */
+    .map-fake {
+      position: relative;
+      background: linear-gradient(135deg, #caf0ff, #f7fbff);
+      border-radius: 16px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .map-river {
+      position: absolute;
+      inset: 20% 10% 15% 15%;
+      background: radial-gradient(circle at 30% 30%, #b9e6ff 0, #7bc7ff 40%, #3c9be5 75%);
+      opacity: 0.8;
+      filter: blur(1px);
+      transform: skewX(-10deg);
+    }
+
+    .map-site-dot {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--blue-main);
+      box-shadow: 0 0 0 3px rgba(27,143,217,0.15);
+    }
+
+    .map-site-text {
+      font-size: 13px;
+    }
+
+    /* Visual pollution checker */
+    .question-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .question-card {
+      border-radius: 14px;
+      padding: 10px 11px;
+      background: #f9fcff;
+      border: 1px solid #dde7f5;
+    }
+
+    label {
+      font-size: 13px;
+    }
+
+    .result-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .result-tag.good {
+      background: #e4f8ee;
+      color: #137252;
+    }
+
+    .result-tag.warning {
+      background: #fff6e0;
+      color: #b77610;
+    }
+
+    .result-tag.bad {
+      background: #ffecec;
+      color: #b13c3c;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: #7086a3;
+      margin-top: 10px;
+    }
+
+    /*
+      New styles for the redesigned "Check My Water" screen.
+      These classes create a kid-friendly ocean backdrop with fish and plants,
+      a central card for input and results, and a colourful gauge to display
+      the overall water quality score. Metrics are shown in a grid below.
+    */
+    .ocean-bg {
+      background: linear-gradient(#8ed9ff, #d8f4ff);
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative images positioned within the ocean background */
+    .fish-left {
+      position: absolute;
+      width: 90px;
+      bottom: 40px;
+      left: 10px;
+      opacity: 0.8;
+    }
+
+    .fish-right {
+      position: absolute;
+      width: 90px;
+      top: 50px;
+      right: 20px;
+      opacity: 0.8;
+    }
+
+    .plants-bottom {
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      opacity: 0.7;
+    }
+
+    /* Central card styling */
+    .water-card {
+      background: white;
+      border-radius: 25px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      position: relative;
+      z-index: 5;
+    }
+
+    .water-title {
+      font-size: 26px;
+      color: #034b7b;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+
+    .droplet-mascot {
+      width: 90px;
+      margin-bottom: 10px;
+    }
+
+    /* Input and button layout */
+    .pin-box {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pin-input {
+      padding: 12px 14px;
+      font-size: 18px;
+      border-radius: 14px;
+      border: 2px solid #c8e9ff;
+      width: 65%;
+      min-width: 160px;
+    }
+
+    .water-btn {
+      background: #1b8fd9;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .water-btn:hover {
+      background: #146aa7;
+    }
+
+    .small-btn {
+      margin-top: 10px;
+      font-size: 14px;
+      padding: 8px 14px;
+    }
+
+    .station-select {
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    /* Score gauge panel */
+    .score-panel {
+      margin-top: 20px;
+      padding: 14px;
+      background: #e0f7ff;
+      border-radius: 18px;
+    }
+
+    .score-number {
+      font-size: 48px;
+      font-weight: 800;
+      color: #169b69;
+    }
+
+    .score-bar {
+      height: 16px;
+      background: linear-gradient(to right, red, orange, yellow, green);
+      border-radius: 20px;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .score-pointer {
+      width: 22px;
+      height: 22px;
+      background: #034b7b;
+      border-radius: 50%;
+      position: absolute;
+      top: -4px;
+      left: 0;
+      transition: left 0.4s ease;
+    }
+
+    /* Grid layout for metrics */
+    .metrics-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: #f5fbff;
+      border-radius: 18px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    /* Display a large water droplet using an emoji as a mascot */
+    .droplet-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    /* Additional helpers for the new design */
+    .station-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .small-label {
+      font-size: 14px;
+      color: #56708a;
+    }
+
+    .score-label {
+      font-size: 16px;
+      margin-top: 4px;
+      color: #56708a;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        align-items: flex-start;
+      }
+      .logo-circle {
+        width: 40px;
+        height: 40px;
+      }
+      .app-title h1 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-circle">A</div>
+  <div class="app-title">
+    <h1>AquaSense</h1>
+    <small>See how happy your water is 💧</small>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nav-button active" data-target="home">
+    <span class="emoji">🏠</span> Home
+  </button>
+  <button class="nav-button" data-target="check">
+    <span class="emoji">🔍</span> Check My Water
+  </button>
+  <button class="nav-button" data-target="learn">
+    <span class="emoji">📚</span> Learn
+  </button>
+  <button class="nav-button" data-target="pollution">
+    <span class="emoji">👀</span> Visual Check
+  </button>
+  <button class="nav-button" data-target="about">
+    <span class="emoji">🌍</span> About Water
+  </button>
+</nav>
+
+<main>
+  <!-- HOME SCREEN -->
+  <section id="screen-home" class="screen active-screen">
+    <div class="card">
+      <h2>Welcome to AquaSense</h2>
+      <p>
+        AquaSense is a simple tool that helps kids see what is happening in rivers and creeks
+        using real data from scientists in the United States.
+      </p>
+
+      <div class="highlight-box" style="margin-top: 10px;">
+        <strong>What can you do here?</strong>
+        <ul>
+          <li><strong>Check My Water:</strong> type your ZIP code and see today’s river data.</li>
+          <li><strong>Learn:</strong> discover what “pH” and “turbidity” mean.</li>
+          <li><strong>Visual Check:</strong> see pictures that show common signs of pollution in water.</li>
+        </ul>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Real data, real rivers</h3>
+          <p class="small-text">
+            We use free public USGS water APIs. They give live measurements like water temperature and
+            how fast the river is moving.
+          </p>
+          <div class="chip-row">
+            <span class="chip">USGS water</span>
+            <span class="chip">Free & Public</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECK MY WATER (New Kid-Friendly Design) -->
+  <section id="screen-check" class="screen ocean-bg">
+    <!-- Main card containing the interactive form and results -->
+    <div class="water-card">
+      <!-- Friendly droplet icon -->
+      <div class="droplet-icon">💧</div>
+      <h2 class="water-title">Check Water Quality in Your Area!</h2>
+
+      <!-- ZIP/PIN input and search button -->
+      <div class="pin-box">
+        <select id="zip-input" class="pin-input">
+          <option value="" disabled selected>Select a PIN Code</option>
+          <option value="08835">08835</option>
+          <option value="08873">08873</option>
+          <option value="08825">08825</option>
+          <option value="08611">08611</option>
+          <option value="08075">08075</option>
+          <option value="08753">08753</option>
+          <option value="07470">07470</option>
+          <option value="33547">33547</option>
+          <option value="33905">33905</option>
+          <option value="34994">34994</option>
+          <option value="32327">32327</option>
+        </select>
+        <button class="water-btn" id="zip-search-button">Check My Water →</button>
+      </div>
+      <p id="zip-status" class="small-text"></p>
+
+      <!-- Station selector and data fetch button -->
+      <div class="station-box">
+        <label class="small-label" for="site-select">Choose a nearby station:</label>
+        <select id="site-select" class="station-select">
+          <option value="">-- no site selected --</option>
+        </select>
+        <button class="water-btn small-btn" id="check-button">Get Latest Data 💧</button>
+      </div>
+      <p id="check-status" class="small-text"></p>
+
+      <!-- Overall score gauge -->
+      <div id="overall-score-box" class="score-panel" style="display:none;">
+        <div class="score-number" id="score-value">0</div>
+        <div class="score-label">Score</div>
+        <div class="score-bar">
+          <div id="score-pointer" class="score-pointer"></div>
+        </div>
+      </div>
+
+      <!-- Metrics grid for individual measurements -->
+      <div id="check-results" class="metrics-grid" style="display:none;"></div>
+
+      <!-- Hidden legacy overall health element (kept for script compatibility) -->
+      <div id="overall-health" style="display:none;"></div>
+    </div>
+
+    <!-- Underwater decorative elements removed due to offline assets -->
+  </section>
+
+  <!-- MAP VIEW REMOVED -->
+  <!-- The map view tab and section have been removed to simplify the experience. -->
+
+  <!-- LEARN SCREEN -->
+  <section id="screen-learn" class="screen">
+    <div class="card">
+      <div class="badge">📚 Science corner</div>
+      <h2>Learn Water Science Words</h2>
+      <p>
+        These are simple meanings of words you might see when you explore water quality.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Physical tests 🧊</h3>
+          <ul>
+            <li><strong>Temperature:</strong> how warm or cold the water is.</li>
+            <li><strong>Turbidity:</strong> how cloudy the water looks.</li>
+            <li><strong>Flow:</strong> how fast the water is moving.</li>
+          </ul>
+          <p class="small-text">
+            Very warm, still, or muddy water can be hard for fish and bugs to live in.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Chemical tests ⚗️</h3>
+          <ul>
+            <li><strong>pH:</strong> tells us if water is more “acid” or “basic”.</li>
+            <li><strong>Dissolved oxygen:</strong> tiny oxygen bubbles in water for fish to breathe.</li>
+            <li><strong>Salts &amp; minerals:</strong> things like calcium and sodium.</li>
+          </ul>
+          <p class="small-text">
+            Clean rivers usually have pH around 6.5–8.5 and enough oxygen for fish.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Biological tests 🐟</h3>
+          <ul>
+            <li><strong>Macroinvertebrates:</strong> small insects and snails living in water.</li>
+            <li><strong>Algae &amp; plants:</strong> tiny or big plants that grow in water.</li>
+          </ul>
+          <p class="small-text">
+            Many different kinds of living things usually means the water is healthier.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISUAL POLLUTION CHECKER -->
+  <section id="screen-pollution" class="screen">
+    <div class="card">
+      <div class="badge">👀 Signs of pollution</div>
+      <h2>Signs of Pollution</h2>
+      <p>
+        Some things you might see can tell you the water needs help. Here's what they mean:
+      </p>
+
+      <div class="info-list">
+        <!-- Floating trash explanation -->
+        <div class="info-card">
+          <h3>Floating trash</h3>
+          <p class="small-text">Trash floating in water means litter has been thrown away. It makes the water dirty and hurts fish and plants.</p>
+        </div>
+        <!-- Oil sheen explanation -->
+        <div class="info-card">
+          <i class="bi bi-water oil-sheen-icon"></i>
+          <h3>Oil sheen on water</h3>
+          <p class="small-text">A shiny rainbow on the water usually means oil or chemicals have been spilled. This can poison fish and birds.</p>
+        </div>
+        <!-- Dead fish explanation -->
+        <div class="info-card">
+          <h3>Dead fish</h3>
+          <p class="small-text">Seeing dead fish is a strong sign that the water is unhealthy for animals. Something in the water could be harming them.</p>
+        </div>
+        <!-- Bad smell explanation -->
+        <div class="info-card">
+          <h3>Bad smell</h3>
+          <p class="small-text">If the water smells like rotten eggs or chemicals, there may be harmful substances polluting it. Always tell an adult.</p>
+        </div>
+        <!-- Green algae explanation -->
+        <div class="info-card">
+          <h3>Green algae</h3>
+          <p class="small-text">A thick green layer on top (algae) means the water has too many nutrients. This can make it hard for fish to breathe.</p>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Safety first! Never touch or drink water that looks unsafe. Always tell an adult or teacher.
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT WATER -->
+  <section id="screen-about" class="screen">
+    <div class="card">
+      <div class="badge">🌍 Why this matters</div>
+      <h2>Why Should We Care About Water?</h2>
+      <p>
+        Clean water is important for people, animals, and plants. Lakes, rivers, and oceans give us
+        drinking water, food, places to play, and homes for wildlife.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>For people 🧑‍🤝‍🧑</h3>
+          <ul>
+            <li>We drink and cook with water.</li>
+            <li>We use water to grow fruits and vegetables.</li>
+            <li>We swim, fish, and play in rivers and lakes.</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h3>For nature 🐠</h3>
+          <ul>
+            <li>Fish, frogs, birds, and insects all need clean water.</li>
+            <li>Wetlands act like nature’s filter and sponge.</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h3>For the future 🔭</h3>
+          <ul>
+            <li>Good water today helps future kids too.</li>
+            <li>Data helps scientists see changes over time.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 10px;">
+        <strong>Your challenge:</strong> Use AquaSense to explore a river. Then write a short
+        “water health report” for your class:
+        <ul>
+          <li>Which site did you choose?</li>
+          <li>What were the latest temperature and flow?</li>
+          <li>What did your visual check say?</li>
+          <li>What can people do to keep this water clean?</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // -------------------------
+  // Simple navigation
+  // -------------------------
+  const navButtons = document.querySelectorAll('.nav-button');
+  const screens = document.querySelectorAll('.screen');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-target');
+
+      navButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      screens.forEach(s => {
+        s.classList.toggle('active-screen', s.id === 'screen-' + target);
+      });
+    });
+  });
+
+  // -------------------------
+  // Simple fetch helpers (no proxies)
+  // -------------------------
+  async function fetchJson(url) {
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} for ${url}`);
+    }
+    return resp.json();
+  }
+
+  async function fetchText(url) {
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} for ${url}`);
+    }
+    return resp.text();
+  }
+
+  // -------------------------
+  // Offline data for Data.xml
+  // -------------------------
+  // Holds parsed site objects from the offline dataset.
+  let offlineSites = null;
+  // Embedded XML data as a fallback when fetching Data.xml via fetch() fails
+  const EMBEDDED_DATA_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <site zip="08835" station="01400500" name="Bound Brook">
+    <temperature unit="°C">15.0</temperature>
+    <pH unit="pH">7.3</pH>
+    <dissolved_oxygen unit="mg/L">8.9</dissolved_oxygen>
+    <turbidity unit="NTU">2.5</turbidity>
+  </site>
+  <site zip="08873" station="01402000" name="Raritan River">
+    <temperature unit="°C">16.5</temperature>
+    <pH unit="pH">7.1</pH>
+    <dissolved_oxygen unit="mg/L">8.7</dissolved_oxygen>
+    <turbidity unit="NTU">1.8</turbidity>
+  </site>
+  <site zip="08825" station="01458500" name="Musconetcong River">
+    <temperature unit="°C">14.2</temperature>
+    <pH unit="pH">7.2</pH>
+    <dissolved_oxygen unit="mg/L">8.4</dissolved_oxygen>
+    <turbidity unit="NTU">2.0</turbidity>
+  </site>
+  <site zip="08611" station="01463500" name="Assunpink Creek">
+    <temperature unit="°C">15.8</temperature>
+    <pH unit="pH">7.0</pH>
+    <dissolved_oxygen unit="mg/L">8.2</dissolved_oxygen>
+    <turbidity unit="NTU">1.7</turbidity>
+  </site>
+  <site zip="08075" station="01467029" name="Rancocas Creek">
+    <temperature unit="°C">13.9</temperature>
+    <pH unit="pH">7.4</pH>
+    <dissolved_oxygen unit="mg/L">9.1</dissolved_oxygen>
+    <turbidity unit="NTU">1.9</turbidity>
+  </site>
+  <site zip="08753" station="01408500" name="Toms River">
+    <temperature unit="°C">16.8</temperature>
+    <pH unit="pH">7.1</pH>
+    <dissolved_oxygen unit="mg/L">8.5</dissolved_oxygen>
+    <turbidity unit="NTU">1.6</turbidity>
+  </site>
+  <site zip="07470" station="01389005" name="Peckman River">
+    <temperature unit="°C">15.3</temperature>
+    <pH unit="pH">7.2</pH>
+    <dissolved_oxygen unit="mg/L">8.6</dissolved_oxygen>
+    <turbidity unit="NTU">1.5</turbidity>
+  </site>
+  <site zip="33547" station="02301500" name="Lithia Springs">
+    <temperature unit="°C">23.4</temperature>
+    <pH unit="pH">7.5</pH>
+    <dissolved_oxygen unit="mg/L">8.0</dissolved_oxygen>
+    <turbidity unit="NTU">1.3</turbidity>
+  </site>
+  <site zip="33905" station="02292900" name="Orange River">
+    <temperature unit="°C">22.8</temperature>
+    <pH unit="pH">7.4</pH>
+    <dissolved_oxygen unit="mg/L">7.8</dissolved_oxygen>
+    <turbidity unit="NTU">2.2</turbidity>
+  </site>
+  <site zip="34994" station="02276998" name="St. Lucie Canal">
+    <temperature unit="°C">21.5</temperature>
+    <pH unit="pH">7.6</pH>
+    <dissolved_oxygen unit="mg/L">7.7</dissolved_oxygen>
+    <turbidity unit="NTU">2.4</turbidity>
+  </site>
+  <site zip="32327" station="02327000" name="Wakulla Springs">
+    <temperature unit="°C">24.0</temperature>
+    <pH unit="pH">7.3</pH>
+    <dissolved_oxygen unit="mg/L">8.2</dissolved_oxygen>
+    <turbidity unit="NTU">1.7</turbidity>
+  </site>
+</data>`;
+
+  // Parse and cache offline sites. Attempts to load Data.xml via fetch() when possible,
+  // falling back to the embedded XML when running directly from a file:// URL.
+  async function loadOfflineSites() {
+    if (offlineSites) return offlineSites;
+    let xmlText = null;
+    try {
+      const resp = await fetch('Data.xml');
+      if (resp.ok) {
+        xmlText = await resp.text();
+      }
+    } catch (err) {
+      // fetch may fail in file:// context; we'll fall back to embedded data
+    }
+    if (!xmlText) {
+      xmlText = EMBEDDED_DATA_XML;
+    }
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+      offlineSites = [];
+      xmlDoc.querySelectorAll('site').forEach(siteNode => {
+        const zip = siteNode.getAttribute('zip');
+        const station = siteNode.getAttribute('station');
+        const name = siteNode.getAttribute('name') || (`Site ${station}`);
+        const temperatureEl = siteNode.querySelector('temperature');
+        const pHEl = siteNode.querySelector('pH');
+        const doEl = siteNode.querySelector('dissolved_oxygen');
+        const turbEl = siteNode.querySelector('turbidity');
+        const temperature = temperatureEl ? parseFloat(temperatureEl.textContent) : null;
+        const pH = pHEl ? parseFloat(pHEl.textContent) : null;
+        const dissolved_oxygen = doEl ? parseFloat(doEl.textContent) : null;
+        const turbidity = turbEl ? parseFloat(turbEl.textContent) : null;
+        offlineSites.push({ zip, station, name, temperature, pH, dissolved_oxygen, turbidity });
+      });
+    } catch (err) {
+      console.error('Failed to parse offline data:', err);
+      offlineSites = [];
+    }
+    return offlineSites;
+  }
+
+  // Search the offline sites by a ZIP code. Returns an array of matching sites.
+  async function searchOfflineSitesByZip(zip) {
+    const sites = await loadOfflineSites();
+    return sites.filter(s => s.zip === zip);
+  }
+
+  // Convert a site object from offlineSites into the structure expected by render functions.
+  function convertSiteToParsed(site) {
+    const parsed = {};
+    if (site.temperature !== null && !isNaN(site.temperature)) {
+      parsed["00010"] = { value: site.temperature, unit: "°C" };
+    }
+    if (site.pH !== null && !isNaN(site.pH)) {
+      parsed["00400"] = { value: site.pH, unit: "pH" };
+    }
+    if (site.dissolved_oxygen !== null && !isNaN(site.dissolved_oxygen)) {
+      parsed["00300"] = { value: site.dissolved_oxygen, unit: "mg/L" };
+    }
+    if (site.turbidity !== null && !isNaN(site.turbidity)) {
+      parsed["00076"] = { value: site.turbidity, unit: "NTU" };
+    }
+    return parsed;
+  }
+
+  // -------------------------
+  // ZIP → lat/lon using Zippopotam
+  // -------------------------
+  const zipInput = document.getElementById('zip-input');
+  const zipSearchButton = document.getElementById('zip-search-button');
+  const zipStatus = document.getElementById('zip-status');
+  const siteSelect = document.getElementById('site-select');
+
+  async function geocodeZip(code) {
+    let country = "us";
+    let postal = code.trim();
+
+    if (postal.includes(":")) {
+      const parts = postal.split(":");
+      country = parts[0].toLowerCase();
+      postal = parts.slice(1).join(":");
+    } else if (/^\d{6}$/.test(postal)) {
+      country = "in";
+    }
+
+    const url = `https://api.zippopotam.us/${country}/${postal}`;
+    try {
+      const data = await fetchJson(url);
+      const place = data.places && data.places[0];
+      if (!place) return null;
+      const lat = parseFloat(place.latitude);
+      const lon = parseFloat(place.longitude);
+      if (isNaN(lat) || isNaN(lon)) return null;
+      const label = `${place["place name"]}, ${place["state abbreviation"] || data.country}`;
+      return { lat, lon, label, country: data.country };
+    } catch (err) {
+      console.warn("Geocode failed", err);
+      return null;
+    }
+  }
+
+  // Override ZIP search to use offline data only (no internet connection required)
+  zipSearchButton.addEventListener('click', async () => {
+    const input = zipInput.value.trim();
+    if (!input) {
+      zipStatus.textContent = "Please enter a ZIP or postal code.";
+      return;
+    }
+    zipStatus.textContent = "Looking for offline stations…";
+    siteSelect.innerHTML = '<option value="">-- loading --</option>';
+    const matches = await searchOfflineSitesByZip(input);
+    if (matches.length === 0) {
+      zipStatus.textContent = "We don't have offline data for that postal code.";
+      siteSelect.innerHTML = '<option value="">-- no site selected --</option>';
+      return;
+    }
+    siteSelect.innerHTML = "";
+    matches.forEach(site => {
+      const opt = document.createElement('option');
+      opt.value = site.station;
+      opt.textContent = `${site.name} (site ${site.station})`;
+      siteSelect.appendChild(opt);
+    });
+    if (matches.length === 1) {
+      zipStatus.textContent = "Found one station. Select it and click 'Get Latest Data'.";
+    } else {
+      zipStatus.textContent = `Found ${matches.length} station(s). Select one and click 'Get Latest Data'.`;
+    }
+  });
+
+  async function searchSitesAround(lat, lon, placeLabel) {
+    zipStatus.textContent = `Looking for USGS water stations near ${placeLabel}…`;
+    siteSelect.innerHTML = '<option value="">-- loading nearby sites --</option>';
+    try {
+      let sites = await findUsgsSitesNear(lat, lon, 0.5); // ~50km
+      if (sites.length === 0) {
+        zipStatus.textContent =
+          "No stations very close. Trying a wider area…";
+        sites = await findUsgsSitesNear(lat, lon, 1.0); // ~100km
+      }
+      if (sites.length === 0) {
+        zipStatus.textContent =
+          "No active water stations found within ~100 km of this location.";
+        siteSelect.innerHTML = '<option value="">-- no nearby sites found --</option>';
+        return;
+      }
+
+      sites.forEach(s => {
+        s.distanceKm = distanceKm(lat, lon, s.lat, s.lon);
+      });
+      sites.sort((a, b) => a.distanceKm - b.distanceKm);
+      const top = sites.slice(0, 10);
+
+      siteSelect.innerHTML = "";
+      top.forEach(site => {
+        const opt = document.createElement('option');
+        opt.value = site.site_no;
+        opt.textContent =
+          `${site.name} (site ${site.site_no}) – ${site.distanceKm.toFixed(1)} km from you`;
+        opt.dataset.lat = site.lat;
+        opt.dataset.lon = site.lon;
+        siteSelect.appendChild(opt);
+      });
+
+      zipStatus.textContent = `Found ${top.length} nearby station(s). Pick one, then click “Get Latest Data”.`;
+    } catch (err) {
+      console.error(err);
+      zipStatus.textContent =
+        "We could not contact the USGS site service. Check your internet connection.";
+      siteSelect.innerHTML = '<option value="">-- no site selected --</option>';
+    }
+  }
+
+  async function findUsgsSitesNear(lat, lon, delta) {
+    const west = lon - delta;
+    const east = lon + delta;
+    const south = lat - delta;
+    const north = lat + delta;
+
+    const url =
+      "https://waterservices.usgs.gov/nwis/site/?" +
+      new URLSearchParams({
+        format: "rdb",
+        bBox: `${west},${south},${east},${north}`,
+        hasDataTypeCd: "iv",
+        siteStatus: "active"
+      });
+
+    const rdbText = await fetchText(url);
+    return parseRdbSites(rdbText);
+  }
+
+  function parseRdbSites(text) {
+    const lines = text.split(/\r?\n/);
+    let headerIndex = -1;
+    let headers = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line || line.startsWith("#")) continue;
+      headerIndex = i;
+      headers = line.split("\t");
+      break;
+    }
+    if (headerIndex === -1) return [];
+
+    const idxSite = headers.indexOf("site_no");
+    const idxName = headers.indexOf("station_nm");
+    const idxLat = headers.indexOf("dec_lat_va");
+    const idxLon = headers.indexOf("dec_long_va");
+    if (idxSite === -1 || idxName === -1 || idxLat === -1 || idxLon === -1) return [];
+
+    const sites = [];
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line || line.startsWith("#")) continue;
+      const cols = line.split("\t");
+      if (cols.length <= idxLon) continue;
+
+      const site_no = cols[idxSite];
+      const name = cols[idxName];
+      const lat = parseFloat(cols[idxLat]);
+      const lon = parseFloat(cols[idxLon]);
+      if (!site_no || !name || isNaN(lat) || isNaN(lon)) continue;
+
+      sites.push({ site_no, name, lat, lon });
+    }
+    return sites;
+  }
+
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const toRad = deg => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  // -------------------------
+  // Check My Water – USGS IV API for pH, DO, Turbidity, Temp
+  // -------------------------
+  const checkButton = document.getElementById('check-button');
+  const checkStatus = document.getElementById('check-status');
+  const checkResults = document.getElementById('check-results');
+  const overallHealth = document.getElementById('overall-health');
+
+  const PARAM_INFO = {
+    "00010": { label: "Temperature", unitHint: "°C" },
+    "00400": { label: "pH", unitHint: "pH" },
+    "00300": { label: "Dissolved Oxygen", unitHint: "mg/L" },
+    "00076": { label: "Turbidity", unitHint: "NTU" },
+    "63680": { label: "Turbidity", unitHint: "FNU" }
+  };
+
+  const PARAM_CODES = Object.keys(PARAM_INFO);
+
+  checkButton.addEventListener('click', async () => {
+    const siteNo = siteSelect.value;
+    if (!siteNo) {
+      checkStatus.textContent = "Please pick a river station first.";
+      return;
+    }
+    // Use offline data: find the selected site and display its metrics
+    const sites = await loadOfflineSites();
+    const site = sites.find(s => s.station === siteNo);
+    if (!site) {
+      checkStatus.textContent = "Selected station not found in offline data.";
+      return;
+    }
+    checkStatus.textContent = `Offline data for ${site.name} (site ${site.station}):`;
+    const parsed = convertSiteToParsed(site);
+    renderMetrics(parsed);
+    renderOverall(parsed);
+  });
+
+  // Disable remote USGS API calls in offline mode. This function is retained for compatibility but does nothing.
+  async function fetchLatestFromUSGS(siteNo) {
+    console.warn('USGS API fetch disabled in offline mode.');
+    return;
+  }
+
+  function parseUSGSResponse(json) {
+    const result = {};
+    if (!json || !json.value || !Array.isArray(json.value.timeSeries)) return result;
+
+    json.value.timeSeries.forEach(ts => {
+      const variable = ts.variable;
+      const codeObj = variable && variable.variableCode && variable.variableCode[0];
+      const pCode = codeObj && codeObj.value;
+      if (!PARAM_CODES.includes(pCode)) return;
+
+      const unitCode = (variable.unit && variable.unit.unitCode) || PARAM_INFO[pCode].unitHint || "";
+      const points = ts.values && ts.values[0] && ts.values[0].value;
+      if (!points || points.length === 0) return;
+
+      const last = points[points.length - 1];
+      const value = parseFloat(last.value);
+      if (isNaN(value)) return;
+
+      result[pCode] = {
+        value,
+        unit: unitCode,
+        time: last.dateTime
+      };
+    });
+
+    return result;
+  }
+
+  function renderMetrics(parsed) {
+    checkResults.style.display = "grid";
+    checkResults.innerHTML = "";
+
+    // Temperature
+    if (parsed["00010"]) {
+      const { value, unit } = parsed["00010"];
+      const status = classifyTemperature(value);
+      checkResults.appendChild(
+        makeMetricCard("Water Temperature", value.toFixed(1) + " " + unit, status)
+      );
+    }
+
+    // pH
+    if (parsed["00400"]) {
+      const { value, unit } = parsed["00400"];
+      const status = classifyPH(value);
+      checkResults.appendChild(
+        makeMetricCard("pH", value.toFixed(2) + " " + unit, status)
+      );
+    }
+
+    // Dissolved Oxygen
+    if (parsed["00300"]) {
+      const { value, unit } = parsed["00300"];
+      const status = classifyDO(value);
+      checkResults.appendChild(
+        makeMetricCard("Dissolved Oxygen", value.toFixed(1) + " " + unit, status)
+      );
+    }
+
+    // Turbidity – prefer FNU if present
+    const turbCode = parsed["63680"] ? "63680" : (parsed["00076"] ? "00076" : null);
+    if (turbCode) {
+      const { value, unit } = parsed[turbCode];
+      const status = classifyTurbidity(value);
+      const label = turbCode === "63680" ? "Turbidity (FNU)" : "Turbidity (NTU)";
+      checkResults.appendChild(
+        makeMetricCard(label, value.toFixed(1) + " " + unit, status)
+      );
+    }
+  }
+
+  function makeMetricCard(label, valueText, statusObj) {
+    const wrap = document.createElement('div');
+    wrap.className = "metric-card";
+
+    const labelEl = document.createElement('div');
+    labelEl.className = "metric-label";
+    labelEl.innerHTML = `<span>${label}</span><span>${statusObj.emoji}</span>`;
+
+    const valueEl = document.createElement('div');
+    valueEl.className = "big-number";
+    valueEl.textContent = valueText;
+
+    const statusEl = document.createElement('div');
+    statusEl.className = "metric-status " + statusObj.className;
+    statusEl.textContent = statusObj.text;
+
+    wrap.appendChild(labelEl);
+    wrap.appendChild(valueEl);
+    wrap.appendChild(statusEl);
+    return wrap;
+  }
+
+  // Revised classification: narrower ranges to produce more varied scores.
+  function classifyTemperature(celsius) {
+    // Define comfortable range for most fish (5–20°C). Warmer water up to 25°C gets a warning; extremes are bad.
+    if (typeof celsius !== 'number' || isNaN(celsius)) {
+      return { emoji: "❓", text: "No data", className: "status-ok" };
+    }
+    if (celsius >= 5 && celsius <= 20) {
+      return { emoji: "✅", text: "Comfortable temperature", className: "status-good" };
+    } else if (celsius > 20 && celsius <= 25) {
+      return { emoji: "⚠️", text: "Warm water", className: "status-ok" };
+    } else {
+      // Too cold (<5°C) or too warm (>25°C)
+      return { emoji: "🔥", text: "Extreme temperature", className: "status-bad" };
+    }
+  }
+
+  function classifyPH(ph) {
+    if (typeof ph !== 'number' || isNaN(ph)) {
+      return { emoji: "❓", text: "No data", className: "status-ok" };
+    }
+    // Optimal pH for most freshwater life is 6.5–8.5. Slight deviations earn a warning; extremes are bad.
+    if (ph >= 6.5 && ph <= 8.5) {
+      return { emoji: "✅", text: "Healthy pH range", className: "status-good" };
+    } else if ((ph >= 5.5 && ph < 6.5) || (ph > 8.5 && ph <= 9.5)) {
+      return { emoji: "⚠️", text: "Slightly acidic/basic", className: "status-ok" };
+    } else {
+      return { emoji: "🚫", text: "Very acidic/basic", className: "status-bad" };
+    }
+  }
+
+  function classifyDO(doMgL) {
+    if (typeof doMgL !== 'number' || isNaN(doMgL)) {
+      return { emoji: "❓", text: "No data", className: "status-ok" };
+    }
+    // Dissolved oxygen: ≥8 mg/L is high, 5–8 mg/L is moderate, <5 mg/L is low.
+    if (doMgL >= 8) {
+      return { emoji: "✅", text: "High oxygen", className: "status-good" };
+    } else if (doMgL >= 5) {
+      return { emoji: "⚠️", text: "Moderate oxygen", className: "status-ok" };
+    } else {
+      return { emoji: "🚫", text: "Low oxygen", className: "status-bad" };
+    }
+  }
+
+  function classifyTurbidity(ntu) {
+    if (typeof ntu !== 'number' || isNaN(ntu)) {
+      return { emoji: "❓", text: "No data", className: "status-ok" };
+    }
+    // Turbidity: ≤1 NTU is crystal clear, 1–5 NTU is slightly cloudy, >5 NTU is very cloudy.
+    if (ntu <= 1) {
+      return { emoji: "👀", text: "Crystal clear", className: "status-good" };
+    } else if (ntu <= 5) {
+      return { emoji: "⚠️", text: "Slightly cloudy", className: "status-ok" };
+    } else {
+      return { emoji: "🌫️", text: "Very cloudy", className: "status-bad" };
+    }
+  }
+
+  function renderOverall(parsed) {
+    let score = 0;
+    let metricsCount = 0;
+
+    // Each metric contributes up to 2 points: 2 for good, 1 for ok, 0 for bad.
+    if (parsed["00010"]) {
+      metricsCount++;
+      const tempVal = parsed["00010"].value;
+      const tempStatus = classifyTemperature(tempVal).className;
+      if (tempStatus === "status-good") score += 2;
+      else if (tempStatus === "status-ok") score += 1;
+    }
+    if (parsed["00400"]) {
+      metricsCount++;
+      const phVal = parsed["00400"].value;
+      const phStatus = classifyPH(phVal).className;
+      if (phStatus === "status-good") score += 2;
+      else if (phStatus === "status-ok") score += 1;
+    }
+    if (parsed["00300"]) {
+      metricsCount++;
+      const doVal = parsed["00300"].value;
+      const doStatus = classifyDO(doVal).className;
+      if (doStatus === "status-good") score += 2;
+      else if (doStatus === "status-ok") score += 1;
+    }
+    // Use FNU (63680) if present, else NTU (00076)
+    const turbCode = parsed["63680"] ? "63680" : (parsed["00076"] ? "00076" : null);
+    if (turbCode) {
+      metricsCount++;
+      const turbVal = parsed[turbCode].value;
+      const turbStatus = classifyTurbidity(turbVal).className;
+      if (turbStatus === "status-good") score += 2;
+      else if (turbStatus === "status-ok") score += 1;
+    }
+    const totalPossible = metricsCount * 2;
+    const scorePercent = totalPossible > 0 ? Math.round((score / totalPossible) * 100) : 0;
+
+    // Show the new gauge and update the pointer
+    const overallScoreBox = document.getElementById("overall-score-box");
+    if (overallScoreBox) {
+      overallScoreBox.style.display = "block";
+      updateGauge(scorePercent);
+    }
+
+    // Legacy: update the hidden overallHealth element for completeness
+    if (typeof overallHealth !== 'undefined' && overallHealth) {
+      overallHealth.style.display = "none";
+      if (scorePercent >= 75) {
+        overallHealth.innerHTML =
+          "<strong>Overall: 😊 These numbers look healthy for many rivers.</strong><br>" +
+          "<span class='small-text'>This is still a simple classroom view, not a full safety check.</span>";
+      } else if (scorePercent >= 50) {
+        overallHealth.innerHTML =
+          "<strong>Overall: 😐 Mixed signs.</strong><br>" +
+          "<span class='small-text'>Some numbers are good, some are more worrying. Scientists would test more things.</span>";
+      } else {
+        overallHealth.innerHTML =
+          "<strong>Overall: 😟 Needs a closer look.</strong><br>" +
+          "<span class='small-text'>These numbers suggest this water might be stressed. Real decisions need full lab tests.</span>";
+      }
+    }
+  }
+
+  // Update the gauge pointer and text based on a percentage value (0–100)
+  function updateGauge(scorePercent) {
+    const pointer = document.getElementById("score-pointer");
+    const scoreValue = document.getElementById("score-value");
+    if (!pointer || !scoreValue) return;
+    scoreValue.textContent = scorePercent;
+    // Constrain pointer movement within the gauge bar
+    const leftPos = (scorePercent / 100) * 90;
+    pointer.style.left = leftPos + "%";
+  }
+
+  // -------------------------
+  // Visual pollution checker removed
+  // -------------------------
+  // The previous visual pollution checker used checkboxes and a scoring system.
+  // This has been removed to keep the visual check simple and fun for kids.
+</script>
+
+</body>
+</html>
